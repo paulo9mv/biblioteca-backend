@@ -9,11 +9,7 @@ var corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// parse requests of content-type - application/json
 app.use(bodyParser.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
@@ -31,12 +27,12 @@ db.mongoose
     process.exit();
   });
 
-// simple route
 app.get("/", (req, res) => {
   res.json({ message: "Hello World da Biblioteca!" });
 });
 
-// set port, listen for requests
+require("./app/routes/turorial.routes")(app);
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
