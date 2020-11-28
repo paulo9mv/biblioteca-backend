@@ -20,14 +20,26 @@ exports.create = (req, res) => {
       .catch(err => {
         res.status(500).send({
           message:
-            err.message || "Algo errado aconteceu. Tente mais tarde."
+            err.message || "Não foi possível criar."
         });
       });
   };
 
-exports.findAll = (req, res) => {
+  exports.findAll = (req, res) => {
+    const nome = req.query.nome;
+    var condition = nome ? { nome: { $regex: new RegExp(nome), $options: "i" } } : {};
   
-};
+    Cliente.find(condition)
+      .then(data => {
+        res.send(data);
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "Não foi possível listar os clientes."
+        });
+      });
+  };
 
 exports.findOne = (req, res) => {
   
