@@ -81,14 +81,39 @@ exports.create = (req, res) => {
       });
   };
 
-exports.delete = (req, res) => {
+  exports.delete = (req, res) => {
+    const id = req.params.id;
   
-};
+    Cliente.findByIdAndRemove(id)
+      .then(data => {
+        if (!data) {
+          res.status(404).send({
+            message: 'Não foi possível deletar.'
+          });
+        } else {
+          res.send({
+            message: "Deletado com sucesso."
+          });
+        }
+      })
+      .catch(err => {
+        res.status(500).send({
+          message: 'Erro ao deletar.'
+        });
+      });
+  };
 
-exports.deleteAll = (req, res) => {
-  
-};
-
-exports.findAllPublished = (req, res) => {
-  
-};
+  exports.deleteAll = (req, res) => {
+    Cliente.deleteMany({})
+      .then(data => {
+        res.send({
+          message: `${data.deletedCount} clientes foram deletados.`
+        });
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "Ocorreu um erro"
+        });
+      });
+  };
