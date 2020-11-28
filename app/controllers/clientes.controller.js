@@ -41,13 +41,45 @@ exports.create = (req, res) => {
       });
   };
 
-exports.findOne = (req, res) => {
+  exports.findOne = (req, res) => {
+    const id = req.params.id;
   
-};
+    Cliente.findById(id)
+      .then(data => {
+        if (!data)
+          res.status(404).send({ message: "Não existe cliente com o id " + id });
+        else res.send(data);
+      })
+      .catch(err => {
+        res
+          .status(500)
+          .send({ message: "Erro ao buscar cliente." });
+      });
+  };
 
-exports.update = (req, res) => {
+  exports.update = (req, res) => {
+    if (!req.body) {
+      return res.status(400).send({
+        message: "Body obrigatório"
+      });
+    }
   
-};
+    const id = req.params.id;
+  
+    Cliente.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+      .then(data => {
+        if (!data) {
+          res.status(404).send({
+            message: 'Não foi possível atualizar.'
+          });
+        } else res.send({ message: "Cliente atualizado com sucesso." });
+      })
+      .catch(err => {
+        res.status(500).send({
+          message: "Erro atualizando"
+        });
+      });
+  };
 
 exports.delete = (req, res) => {
   
