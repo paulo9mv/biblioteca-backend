@@ -1,12 +1,38 @@
 const db = require("../models");
 const Cliente = db.clientes;
 
-exports.create = (req, res) => {
+async function contaOcorrencias(nome, res) {
+    var condition = nome ? { nome: { $regex: new RegExp(nome), $options: "i" } } : {};
+  
+    try {
+      const quantidade = await Cliente.find(condition)
+      return quantidade.length
+    } catch (e) {
+      return -1
+    }
+}
+
+exports.create = async (req, res) => {
     if (!req.body.nome) {
       res.status(400).send({ message: "Erro. Nome obrigatório." });
       return;
     }
-  
+
+    const nome = req.body.nome;
+    const ocorrenciasNome = await contaOcorrencias(nome)
+
+    if (ocorrenciasNome === -1) {
+      res.status(500).send({
+        message: 'Erro'
+      });
+      return;
+    } else if (ocorrenciasNome > 0) {
+      res.status(400).send({
+        message: 'Nome já utilizado. Sorry.'
+      });
+      return;
+    }
+    
     const cliente = new Cliente({
       nome: req.body.nome,
       email: req.body.email,
@@ -25,10 +51,17 @@ exports.create = (req, res) => {
       });
   };
 
-  exports.findAll = (req, res) => {
+  exports.findAll = async (req, res) => {
+
+
     const nome = req.query.nome;
+    console.log(nome)
     var condition = nome ? { nome: { $regex: new RegExp(nome), $options: "i" } } : {};
   
+    const quantidade = await contaOcorrencias(nome)
+
+    console.log(quantidade, ' foram contadas.')
+
     Cliente.find(condition)
       .then(data => {
         res.send(data);
