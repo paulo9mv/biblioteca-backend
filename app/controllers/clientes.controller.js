@@ -55,12 +55,10 @@ exports.create = async (req, res) => {
 
 
     const nome = req.query.nome;
-    console.log(nome)
     var condition = nome ? { nome: { $regex: new RegExp(nome), $options: "i" } } : {};
   
     const quantidade = await contaOcorrencias(nome)
 
-    console.log(quantidade, ' foram contadas.')
 
     Cliente.find(condition)
       .then(data => {
