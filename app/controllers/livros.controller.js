@@ -5,6 +5,7 @@ const LivroRegistro = db.livroRegistro;
 const Emprestimo = db.emprestimo;
 
 const livroService = require('../services/livros.service')
+const clienteService = require('../services/cliente.service')
 
 exports.create = async (req, res) => {
     const titulo = req.body.titulo
@@ -67,10 +68,10 @@ exports.findAllBooksByRegisterId = async (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Livro.findById(id)
+  LivroRegistro.findById(id)
     .then(data => {
       if (!data)
-        res.status(404).send({ message: "Não existe cliente com o id " + id });
+        res.status(404).send({ message: "Não existe livro com o id " + id });
       else res.send(data);
     })
     .catch(err => {
@@ -80,7 +81,7 @@ exports.findOne = (req, res) => {
     });
 };
 
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Body obrigatório"
@@ -88,9 +89,19 @@ exports.update = (req, res) => {
   }
 
   const id = req.params.id;
+  console.log(id)
 
-  Livro.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+  const livros = await livroService.findAllBooksByRegisterId(id)
+  for(var i = 0; i < livros.length; i++) {
+    let livro = livros[i]
+    await livroService.updateBook(livro.id, req.body)
+  }
+
+  console.log(req.body)
+
+  LivroRegistro.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
     .then(data => {
+      console.log(data)
       if (!data) {
         res.status(404).send({
           message: 'Não foi possível atualizar.'
@@ -144,7 +155,19 @@ exports.deleteAll = (req, res) => {
 exports.getEmprestimo = async (req, res) => {
   try {
     const emprestimos = await livroService.findAllBorrows()
-    res.send(emprestimos)
+    const data = []
+    console.log(emprestimos)
+    for(var i = 0; i < emprestimos.length; i++) {
+      let cliente = await clienteService.findOne(emprestimos[i].clienteId)
+      let livro = await livroService.findOneLivro(emprestimos[i].livroId)
+      data.push({
+        emprestimo: emprestimos[i],
+        cliente,
+        livro
+      })
+    }
+    console.log(data)
+    res.send(data)
   } catch (e) {
     res.status(500).send({
       message: 'Ocorreu um erro'
@@ -174,8 +197,7 @@ exports.emprestimo = async (req, res) => {
   }
 
   const idLivro = livrosDisponiveis[0].id
-  const livroAtt = await livroService.updateBookSituation(idLivro, 'Emprestado')
-  console.log(livroAtt)
+  await livroService.updateBookSituation(idLivro, 'Emprestado')
 
   const emprestimo = new Emprestimo({
     clienteId,

@@ -16,6 +16,10 @@ exports.createLivroService = async (id, titulo, autor) => {
   return livroPromise
 };
 
+exports.findOneLivro = async (id) => {
+  return Livro.findById(id).catch(e => console.log(e))
+}
+
 exports.findAllBooksByRegisterId = async (registerId) => {
   const idRegistro = registerId
   var conditionRegistro = idRegistro ? { 
@@ -30,6 +34,16 @@ exports.findAllBooksAvailableByRegisterId = async (registerId) => {
   var conditionRegistro = idRegistro ? { 
     idRegistro: { $regex: new RegExp(idRegistro), $options: "i" },
     situacao: { $regex: new RegExp('Disponível'), $options: "i" }
+  } : {};
+
+  return Livro.find(conditionRegistro).catch(err => console.log(err))
+}
+
+exports.findAllBooksBorrowedByRegisterId = async (registerId) => {
+  const idRegistro = registerId
+  var conditionRegistro = idRegistro ? { 
+    idRegistro: { $regex: new RegExp(idRegistro), $options: "i" },
+    situacao: { $regex: new RegExp('Emprestado'), $options: "i" }
   } : {};
 
   return Livro.find(conditionRegistro).catch(err => console.log(err))
@@ -65,5 +79,10 @@ exports.deleteBorrowedBookFromClient = (id) => {
 
 exports.findAllBorrows = () => {
   return Emprestimo.find({})
+    .catch(err => console.log(err));
+}
+
+exports.updateBook = (id, data) => {
+  return Livro.findByIdAndUpdate(id, data, { useFindAndModify: false })
     .catch(err => console.log(err));
 }
