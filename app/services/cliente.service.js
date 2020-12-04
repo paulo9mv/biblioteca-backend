@@ -8,6 +8,5 @@ exports.findOne = (id) => {
 };
 
 exports.findAll = () => {
-    console.log('findAll()')
     return Cliente.find({}).catch(err => console.log(err));
 }

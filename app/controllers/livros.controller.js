@@ -153,7 +153,6 @@ exports.deleteAll = (req, res) => {
 exports.getEmprestimo = async (req, res) => {
   try {
     const emprestimos = await livroService.findAllBorrows()
-    console.log(emprestimos)
     const data = []
     for(var i = 0; i < emprestimos.length; i++) {
       let cliente = await clienteService.findOne(emprestimos[i].clienteId)

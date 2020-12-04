@@ -16,15 +16,12 @@ async function contaOcorrencias(nome, res) {
 }
 
 exports.findTopClientes = async (req, res) => {
-  console.log('oi')
   const clientes = await clienteService.findAll()
 
-  console.log(clientes)
   const data = []
 
   for(var i = 0; i < clientes.length; i++) {
     let quantidade = await livroService.countAllBorrowsByClient(clientes[i].id)
-    console.log(quantidade)
     data.push({
       cliente: clientes[i],
       livrosEmprestados: quantidade
