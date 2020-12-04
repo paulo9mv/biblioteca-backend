@@ -98,3 +98,7 @@ exports.updateBook = (id, data) => {
   return Livro.findByIdAndUpdate(id, data, { useFindAndModify: false })
     .catch(err => console.log(err));
 }
+
+exports.deleteBookById = (id) => {
+  return Livro.findByIdAndRemove(id).catch(e => console.log(e))
+}

@@ -113,10 +113,23 @@ exports.update = async (req, res) => {
     });
 };
 
-exports.delete = (req, res) => {
+exports.delete = async (req, res) => {
   const id = req.params.id;
 
-  Livro.findByIdAndRemove(id)
+  const livrosEmprestados = await livroService.findAllBooksBorrowedByRegisterId(id)
+  if (livrosEmprestados.length > 0) {
+    res.status(404).send({
+      message: 'Existem exemplares emprestados, não é possível deletar.'
+    })
+    return
+  }
+
+  const livrosPorRegistroId = await livroService.findAllBooksByRegisterId(id)
+  for(var i = 0; i < livrosPorRegistroId.length; i++){
+    await livroService.deleteLivro(livrosPorRegistroId[i].id)
+  }
+
+  LivroRegistro.findByIdAndRemove(id)
     .then(data => {
       if (!data) {
         res.status(404).send({
@@ -124,7 +137,7 @@ exports.delete = (req, res) => {
         });
       } else {
         res.send({
-          message: "Deletado com sucesso."
+          message: "Registro de livro deletado com sucesso."
         });
       }
     })

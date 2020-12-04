@@ -127,8 +127,16 @@ exports.create = async (req, res) => {
       });
   };
 
-  exports.delete = (req, res) => {
+  exports.delete = async (req, res) => {
     const id = req.params.id;
+
+    const livrosEmprestados = await livroService.countBooksBorrowedByClient(id)
+    if (livrosEmprestados > 0) {
+      res.status(404).send({
+        message: 'Usuários possui livros emprestados, não é possível deletar.'
+      })
+      return
+    }
   
     Cliente.findByIdAndRemove(id)
       .then(data => {
