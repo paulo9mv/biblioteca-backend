@@ -1,10 +1,9 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema(
       {
-        titulo: String,
+        titulo: { type: String, unique: true },
         autor: String,
-        status: String,
-        idRegistro: String
+        quantidade: Number
       },
       { timestamps: true }
     );
@@ -13,6 +12,6 @@ module.exports = mongoose => {
       object.id = _id;
       return object;
     });
-    const Livro = mongoose.model("livro", schema);
-    return Livro;
+    const LivroRegistro = mongoose.model("livroRegistro", schema);
+    return LivroRegistro;
   };

@@ -11,15 +11,21 @@ module.exports = app => {
   
     // Retrieve a single Tutorial with id
     router.get("/:id", livros.findOne);
+
+    // Retrieve a single Tutorial with id
+    router.get("/:id/livros", livros.findAllBooksByRegisterId);
   
     // Update a Tutorial with id
     router.put("/:id", livros.update);
   
-    // Delete a Tutorial with id
+    // Deleta específico
     router.delete("/:id", livros.delete);
   
-    // Create a new Tutorial
+    // Deleta todos
     router.delete("/", livros.deleteAll);
+
+    // Empresta livros
+    router.post("/:clienteId/:livroId", livros.emprestimo);
   
     app.use('/api/livros', router);
   };

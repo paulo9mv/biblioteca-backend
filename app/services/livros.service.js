@@ -3,9 +3,7 @@ const Livro = db.livros;
 const LivroRegistro = db.livroRegistro;
 const Emprestimo = db.emprestimo;
 
-const createLivroService = require('../services/livros.service')
-
-exports.createLivro = async (id, titulo, autor) => {
+exports.createLivroService = async (id, titulo, autor) => {
   const livro = new Livro({
     idRegistro: id,
     titulo,
@@ -13,12 +11,9 @@ exports.createLivro = async (id, titulo, autor) => {
     status: 'Disponível'
   });
 
-  livro
-    .save(livro)
-    .then(data => {
-      return true
-    })
-    .catch(err => console.log(err));
+  const livroPromise = livro.save(livro).catch(err => console.log(err));
+
+  return livroPromise
 };
 
 exports.create = async (req, res) => {
@@ -32,7 +27,7 @@ exports.create = async (req, res) => {
       quantidade
     });
 
-    livroRegistro
+    const livroRegistroPromise = livroRegistro
       .save(livroRegistro)
       .then(async data => {
         const id = data.id
