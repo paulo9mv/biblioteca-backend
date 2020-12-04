@@ -62,3 +62,8 @@ exports.deleteBorrowedBookFromClient = (id) => {
   return Emprestimo.findByIdAndRemove(id)
     .catch(e => console.log(e));
 }
+
+exports.findAllBorrows = () => {
+  return Emprestimo.find({})
+    .catch(err => console.log(err));
+}

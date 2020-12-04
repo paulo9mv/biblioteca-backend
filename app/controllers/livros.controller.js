@@ -1,3 +1,4 @@
+const { emprestimo } = require("../models");
 const db = require("../models");
 const Livro = db.livros;
 const LivroRegistro = db.livroRegistro;
@@ -140,13 +141,23 @@ exports.deleteAll = (req, res) => {
     });
 };
 
+exports.getEmprestimo = async (req, res) => {
+  try {
+    const emprestimos = await livroService.findAllBorrows()
+    res.send(emprestimos)
+  } catch (e) {
+    res.status(500).send({
+      message: 'Ocorreu um erro'
+    })
+  }
+}
+
 exports.emprestimo = async (req, res) => {
   const clienteId = req.params.clienteId;
   const registroLivroId = req.params.livroId;
 
   const livrosDisponiveis = await livroService.findAllBooksAvailableByRegisterId(registroLivroId)
 
-  console.log(livrosDisponiveis)
   if (livrosDisponiveis.length === 0){
     res.status(400).send({
       message: 'Não há livros disponíveis'

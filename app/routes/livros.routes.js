@@ -24,6 +24,9 @@ module.exports = app => {
     // Deleta todos
     router.delete("/", livros.deleteAll);
 
+    // Retrieve a single Tutorial with id
+    router.get("/emprestimo/all", livros.getEmprestimo);
+
     // Empresta livros
     router.post("/emprestimo/:clienteId/:livroId", livros.emprestimo);
 
