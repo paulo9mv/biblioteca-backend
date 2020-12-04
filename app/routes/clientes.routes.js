@@ -20,6 +20,8 @@ module.exports = app => {
   
     // Create a new Tutorial
     router.delete("/", clientes.deleteAll);
+
+    router.get('/top/top', clientes.findTopClientes)
   
     app.use('/api/clientes', router);
   };

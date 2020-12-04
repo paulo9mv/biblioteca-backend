@@ -58,7 +58,8 @@ exports.updateBookSituation = (id, situacao) => {
 
 exports.countBooksBorrowedByClient = (id) => {
   var conditionRegistro = id ? { 
-    clienteId: { $regex: new RegExp(id), $options: "i" }
+    clienteId: { $regex: new RegExp(id), $options: "i" },
+    situacao: { $regex: new RegExp('Emprestado'), $options: "i" },
   } : {};
 
   return Emprestimo.find(conditionRegistro).then(data => data.length).catch(err => console.log(err))
@@ -66,20 +67,31 @@ exports.countBooksBorrowedByClient = (id) => {
 
 exports.findBooksBorrowedByClient = (id) => {
   var conditionRegistro = id ? { 
-    clienteId: { $regex: new RegExp(id), $options: "i" }
+    clienteId: { $regex: new RegExp(id), $options: "i" },
+    situacao: { $regex: new RegExp('Emprestado'), $options: "i" }
   } : {};
 
   return Emprestimo.find(conditionRegistro).catch(err => console.log(err))
 }
 
 exports.deleteBorrowedBookFromClient = (id) => {
-  return Emprestimo.findByIdAndRemove(id)
+  return Emprestimo.findByIdAndUpdate(id, { situacao: 'Devolvido' }, { useFindAndModify: false })
     .catch(e => console.log(e));
 }
 
 exports.findAllBorrows = () => {
-  return Emprestimo.find({})
+  var conditionRegistro = { situacao: { $regex: new RegExp('Emprestado'), $options: "i" }};
+
+  return Emprestimo.find(conditionRegistro)
     .catch(err => console.log(err));
+}
+
+exports.countAllBorrowsByClient = (id) => {
+  var conditionRegistro = id ? { 
+    clienteId: { $regex: new RegExp(id), $options: "i" },
+  } : {};
+
+  return Emprestimo.find(conditionRegistro).then(data => data.length).catch(err => console.log(err))
 }
 
 exports.updateBook = (id, data) => {

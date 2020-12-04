@@ -153,6 +153,7 @@ exports.deleteAll = (req, res) => {
 exports.getEmprestimo = async (req, res) => {
   try {
     const emprestimos = await livroService.findAllBorrows()
+    console.log(emprestimos)
     const data = []
     for(var i = 0; i < emprestimos.length; i++) {
       let cliente = await clienteService.findOne(emprestimos[i].clienteId)
@@ -187,7 +188,7 @@ exports.emprestimo = async (req, res) => {
   const livrosEmprestados = await livroService.findBooksBorrowedByClient(clienteId)
   if (livrosEmprestados.length === 2) {
     res.status(400).send({
-      message: `Usuário já possui ${livrosEmprestados} emprestados!`
+      message: `Usuário já possui ${livrosEmprestados.length} emprestados!`
     })
     return;
   }
@@ -215,6 +216,7 @@ exports.emprestimo = async (req, res) => {
   const emprestimo = new Emprestimo({
     clienteId,
     livroId: idLivro,
+    situacao: 'Emprestado'
   });
 
   emprestimo

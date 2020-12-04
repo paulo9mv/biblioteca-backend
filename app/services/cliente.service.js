@@ -6,3 +6,8 @@ const Emprestimo = db.emprestimo;
 exports.findOne = (id) => {
   return Cliente.findById(id).catch(e => console.log(e))
 };
+
+exports.findAll = () => {
+    console.log('findAll()')
+    return Cliente.find({}).catch(err => console.log(err));
+}

@@ -1,6 +1,9 @@
 const db = require("../models");
 const Cliente = db.clientes;
 
+const livroService = require('../services/livros.service')
+const clienteService = require('../services/cliente.service')
+
 async function contaOcorrencias(nome, res) {
     var condition = nome ? { nome: { $regex: new RegExp(nome), $options: "i" } } : {};
   
@@ -10,6 +13,26 @@ async function contaOcorrencias(nome, res) {
     } catch (e) {
       return -1
     }
+}
+
+exports.findTopClientes = async (req, res) => {
+  console.log('oi')
+  const clientes = await clienteService.findAll()
+
+  console.log(clientes)
+  const data = []
+
+  for(var i = 0; i < clientes.length; i++) {
+    let quantidade = await livroService.countAllBorrowsByClient(clientes[i].id)
+    console.log(quantidade)
+    data.push({
+      cliente: clientes[i],
+      livrosEmprestados: quantidade
+    })
+  }
+
+  data.sort((a, b) => parseFloat(b.livrosEmprestados) - parseFloat(a.livrosEmprestados))
+  res.status(200).send(data)
 }
 
 exports.create = async (req, res) => {
@@ -54,9 +77,6 @@ exports.create = async (req, res) => {
   exports.findAll = async (req, res) => {
     const nome = req.query.nome;
     var condition = nome ? { nome: { $regex: new RegExp(nome), $options: "i" } } : {};
-  
-    const quantidade = await contaOcorrencias(nome)
-
 
     Cliente.find(condition)
       .then(data => {

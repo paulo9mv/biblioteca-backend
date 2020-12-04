@@ -32,6 +32,6 @@ module.exports = app => {
 
     // Empresta livros
     router.delete("/emprestimo/:id", livros.devolucao);
-  
+
     app.use('/api/livros', router);
   };
