@@ -4,6 +4,8 @@ const Livro = db.livros;
 const LivroRegistro = db.livroRegistro;
 const Emprestimo = db.emprestimo;
 
+const moment = require('moment')
+
 const livroService = require('../services/livros.service')
 const clienteService = require('../services/cliente.service')
 
@@ -89,7 +91,6 @@ exports.update = async (req, res) => {
   }
 
   const id = req.params.id;
-  console.log(id)
 
   const livros = await livroService.findAllBooksByRegisterId(id)
   for(var i = 0; i < livros.length; i++) {
@@ -97,11 +98,8 @@ exports.update = async (req, res) => {
     await livroService.updateBook(livro.id, req.body)
   }
 
-  console.log(req.body)
-
   LivroRegistro.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
     .then(data => {
-      console.log(data)
       if (!data) {
         res.status(404).send({
           message: 'Não foi possível atualizar.'
@@ -156,7 +154,6 @@ exports.getEmprestimo = async (req, res) => {
   try {
     const emprestimos = await livroService.findAllBorrows()
     const data = []
-    console.log(emprestimos)
     for(var i = 0; i < emprestimos.length; i++) {
       let cliente = await clienteService.findOne(emprestimos[i].clienteId)
       let livro = await livroService.findOneLivro(emprestimos[i].livroId)
@@ -166,7 +163,6 @@ exports.getEmprestimo = async (req, res) => {
         livro
       })
     }
-    console.log(data)
     res.send(data)
   } catch (e) {
     res.status(500).send({
@@ -188,13 +184,30 @@ exports.emprestimo = async (req, res) => {
     return;
   }
 
-  const livrosEmprestados = await livroService.countBooksBorrowedByClient(clienteId)
-  if (livrosEmprestados === 1) {
+  const livrosEmprestados = await livroService.findBooksBorrowedByClient(clienteId)
+  if (livrosEmprestados.length === 2) {
     res.status(400).send({
       message: `Usuário já possui ${livrosEmprestados} emprestados!`
     })
     return;
   }
+  const livrosEmAtraso = livrosEmprestados.filter(item => {
+    const startTime = moment(item.createdAt)
+    const end = moment()
+
+    var duration = moment.duration(end.diff(startTime));
+    var minutes = duration.asMinutes();
+
+    return minutes > 5
+  })
+
+  if (livrosEmAtraso.length > 0) {
+    res.status(400).send({
+      message: 'Usuário possui livros em atraso.'
+    })
+    return
+  }
+
 
   const idLivro = livrosDisponiveis[0].id
   await livroService.updateBookSituation(idLivro, 'Emprestado')
@@ -224,7 +237,6 @@ exports.devolucao = async (req, res) => {
     const livroId = emprestimoRemovido.livroId
     await livroService.updateBookSituation(livroId, 'Disponível')
 
-    console.log(emprestimoRemovido)
     res.status(200).send({
       message: 'Livro devolvido com sucesso'
     })
