@@ -13,7 +13,7 @@ module.exports = app => {
     router.get("/:id", livros.findOne);
 
     // Retrieve a single Tutorial with id
-    router.get("/:id/livros", livros.findAllBooksByRegisterId);
+    router.get("/registro/:id", livros.findAllBooksByRegisterId);
   
     // Update a Tutorial with id
     router.put("/:id", livros.update);
@@ -25,7 +25,10 @@ module.exports = app => {
     router.delete("/", livros.deleteAll);
 
     // Empresta livros
-    router.post("/:clienteId/:livroId", livros.emprestimo);
+    router.post("/emprestimo/:clienteId/:livroId", livros.emprestimo);
+
+    // Empresta livros
+    router.delete("/emprestimo/:id", livros.devolucao);
   
     app.use('/api/livros', router);
   };

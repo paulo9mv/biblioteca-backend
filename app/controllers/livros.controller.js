@@ -3,23 +3,7 @@ const Livro = db.livros;
 const LivroRegistro = db.livroRegistro;
 const Emprestimo = db.emprestimo;
 
-const createLivroService = require('../services/livros.service')
-
-exports.createLivro = async (id, titulo, autor) => {
-  const livro = new Livro({
-    idRegistro: id,
-    titulo,
-    autor,
-    status: 'Disponível'
-  });
-
-  livro
-    .save(livro)
-    .then(data => {
-      return true
-    })
-    .catch(err => console.log(err));
-};
+const livroService = require('../services/livros.service')
 
 exports.create = async (req, res) => {
     const titulo = req.body.titulo
@@ -37,8 +21,7 @@ exports.create = async (req, res) => {
       .then(async data => {
         const id = data.id
         for(var i = 0; i < data.quantidade; i++) {
-          let response = await this.createLivro(id, titulo, autor)
-          console.log(response)
+          await livroService.createLivroService(id, titulo, autor)
         }
         res.send(data)
       })
@@ -68,19 +51,16 @@ exports.findAll = async (req, res) => {
 
 exports.findAllBooksByRegisterId = async (req, res) => {
   const idRegistro = req.params.id
-  var condition = idRegistro ? { idRegistro: { $regex: new RegExp(idRegistro), $options: "i" } } : {};
 
-  console.log(idRegistro)
-  Livro.find(condition)
-  .then(data => {
-    res.send(data);
-  })
-  .catch(err => {
+  try {
+    const data = await livroService.findAllBooksByRegisterId(idRegistro)
+
+    res.send(data)
+  } catch (e) {
     res.status(500).send({
-      message:
-        err.message || "Não foi possível listar os livros."
+      message: "Erro ao buscar"
     });
-  });
+  }
 }
 
 exports.findOne = (req, res) => {
@@ -164,9 +144,31 @@ exports.emprestimo = async (req, res) => {
   const clienteId = req.params.clienteId;
   const registroLivroId = req.params.livroId;
 
+  const livrosDisponiveis = await livroService.findAllBooksAvailableByRegisterId(registroLivroId)
+
+  console.log(livrosDisponiveis)
+  if (livrosDisponiveis.length === 0){
+    res.status(400).send({
+      message: 'Não há livros disponíveis'
+    })
+    return;
+  }
+
+  const livrosEmprestados = await livroService.countBooksBorrowedByClient(clienteId)
+  if (livrosEmprestados === 1) {
+    res.status(400).send({
+      message: `Usuário já possui ${livrosEmprestados} emprestados!`
+    })
+    return;
+  }
+
+  const idLivro = livrosDisponiveis[0].id
+  const livroAtt = await livroService.updateBookSituation(idLivro, 'Emprestado')
+  console.log(livroAtt)
+
   const emprestimo = new Emprestimo({
     clienteId,
-    livroId,
+    livroId: idLivro,
   });
 
   emprestimo
@@ -181,3 +183,24 @@ exports.emprestimo = async (req, res) => {
       });
     });
 }
+
+exports.devolucao = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const emprestimoRemovido = await livroService.deleteBorrowedBookFromClient(id)
+    const livroId = emprestimoRemovido.livroId
+    await livroService.updateBookSituation(livroId, 'Disponível')
+
+    console.log(emprestimoRemovido)
+    res.status(200).send({
+      message: 'Livro devolvido com sucesso'
+    })
+  } catch (e) {
+    res.status(400).send({
+      message: 'Erro ao devolver'
+    })
+  }
+}
+
+// clienteId 5fc989349df88f0730e05398
+// registroLivroId 5fc989429df88f0730e05399
